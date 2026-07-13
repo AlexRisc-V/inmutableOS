@@ -1,0 +1,54 @@
+name: Compilar InmutableOS e ISO
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+env:
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  bluebuild:
+    name: Construir Sistema Operativo en la Nube
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Clonar Repositorio
+        uses: actions/checkout@v4
+
+      # Compila la receta YAML y la publica automáticamente en GitHub Packages (GHCR)
+      - name: Construir Imagen del Contenedor
+        id: build-image
+        uses: blue-build/github-action@v1
+        with:
+          recipe: 'recipes/recipe.yml'
+          registry_token: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+
+      # Toma el contenedor compilado en el paso anterior y lo empaqueta en una ISO instalable
+      - name: Generar la ISO de Instalación
+        id: generate-iso
+        uses: blue-build/github-action@v1
+        with:
+          recipe: 'recipes/recipe.yml'
+          generate-iso: true
+          iso-name: 'InmutableOS.iso'
+
+      # Sube la ISO resultante a la pestaña "Actions" para que la puedas descargar al instante
+      - name: Guardar la ISO como Artefacto Descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: InmutableOS
+          path: |
+            *.iso
+            
