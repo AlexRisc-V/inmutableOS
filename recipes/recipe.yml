@@ -1,0 +1,38 @@
+# Configuración Principal
+name: inmutable-os
+description: Sistema atómico basado en Budgie diseñado para usuarios que buscan una experiencia lista para usar.
+base-image: ghcr.io/fedora-atomic/budgie-atomic
+image-version: 44
+
+modules:
+  - type: rpm-ostree
+    remove:
+      - firefox
+      - gnome-terminal 
+      - gnome-discover
+
+  - type: rpm-ostree
+    install:
+      # Drivers y Aceleración de Vídeo
+      - mesa-dri-drivers
+      - mesa-vulkan-drivers
+      - xorg-x11-drv-nvidia-libs # Codecs 
+      - gstreamer1-plugins-bad-free
+      - gstreamer1-plugins-good
+      - gstreamer1-libav
+      - pipewire-codec-aptx
+
+  - type: flatpaks
+    notify: true
+    system:
+            remotes:
+        flathub: https://flathub.org
+      install:
+        - org.videolan.VLC
+        - org.mozilla.firefox
+        - org.onlyoffice.desktopeditors
+        - com.github.buddhibp.bazaar       
+        - org.gnome.Calendar
+        - org.gnome.Calculator
+        - com.mailspring.Mailspring
+
